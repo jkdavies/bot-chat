@@ -1,0 +1,24 @@
+{
+  "bind": "127.0.0.1",
+  "port": 3000,
+  "database": "data/bot-chat.sqlite",
+  "ownerHashFile": "/run/secrets/owner.hash",
+  "accessTtlSeconds": 600,
+  "replyTtlSeconds": 3600,
+  "limits": {
+    "caller": {"hour": 10, "day": 40},
+    "bot": {"hour": 20, "day": 80},
+    "global": {"hour": 30, "day": 120},
+    "spacingMs": 3000
+  },
+  "bots": [{
+    "id": "research-bot",
+    "name": "Research bot",
+    "description": "Answers research questions and acknowledges findings",
+    "optedIn": false,
+    "kinds": ["question", "finding"],
+    "adapter": "grok_bot_webhook",
+    "urlEnv": "RESEARCH_WEBHOOK_URL",
+    "keyEnv": "RESEARCH_WEBHOOK_KEY"
+  }]
+}

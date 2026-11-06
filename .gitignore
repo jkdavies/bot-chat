@@ -1,0 +1,14 @@
+node_modules/
+dist/
+data/
+config.json
+config.local.json
+*.local.*
+.env
+.env.*
+!.env.example
+*secrets*
+*.sqlite*
+*.db*
+*.hash
+coverage/
