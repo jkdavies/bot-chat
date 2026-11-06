@@ -543,3 +543,56 @@ test("CIMD rejects insecure and literal loopback client IDs before fetching", as
     await f.close();
   }
 });
+
+test("OAuth client cannot reuse an existing caller name; access tokens enforce expiry and audience", async () => {
+  const f = await fixture();
+  try {
+    const reg = await (
+      await f.req("/register", {
+        client_name: f.caller.name,
+        redirect_uris: ["https://example.com/cb"],
+      })
+    ).json();
+    const p = {
+      client_id: reg.client_id,
+      redirect_uri: "https://example.com/cb",
+      response_type: "code",
+      code_challenge: hash(token()),
+      code_challenge_method: "S256",
+      resource: f.base + "/mcp",
+    };
+    const html = await (
+      await f.req("/authorize?" + new URLSearchParams(p))
+    ).text();
+    const pending = html.match(/name="pending" value="([^"]+)"/)![1];
+    assert.equal(
+      (
+        await f.form("/consent", {
+          pending,
+          password: f.password,
+          decision: "approve",
+        })
+      ).status,
+      400,
+    );
+    assert.equal(f.store.caller(reg.client_id), undefined);
+    const wrong = f.store.grant(
+      "access",
+      f.caller.id,
+      "fixture",
+      "https://example.com/mcp",
+      60000,
+    );
+    assert.equal(f.store.authenticate(wrong, f.base + "/mcp"), undefined);
+    const expired = f.store.grant(
+      "access",
+      f.caller.id,
+      "fixture",
+      f.base + "/mcp",
+      -1,
+    );
+    assert.equal(f.store.authenticate(expired, f.base + "/mcp"), undefined);
+  } finally {
+    await f.close();
+  }
+});

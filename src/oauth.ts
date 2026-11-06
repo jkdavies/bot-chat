@@ -140,6 +140,7 @@ export function oauth(app: Express, c: Config, s: Store) {
             reject(Error("Invalid client"));
             return;
           }
+          res.on("error", reject);
           let body = "";
           res.on("data", (chunk) => {
             body += chunk;
@@ -148,6 +149,8 @@ export function oauth(app: Express, c: Config, s: Store) {
           res.on("end", () => resolve(body));
         },
       );
+      const deadline = setTimeout(() => req.destroy(Error("Timeout")), 5000);
+      req.once("close", () => clearTimeout(deadline));
       req.on("timeout", () => req.destroy(Error("Timeout")));
       req.on("error", reject);
       req.end();
