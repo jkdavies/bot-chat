@@ -1,0 +1,18 @@
+services:
+  bot-chat:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      PUBLIC_BASE_URL: https://bot-chat.example.com
+      BOT_CHAT_CONFIG: /run/config/config.json
+    volumes:
+      - ./config.local.json:/run/config/config.json:ro
+      - ./secrets:/run/secrets:ro
+      - bot-chat-data:/app/data
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+volumes:
+  bot-chat-data:
